@@ -1,1 +1,6 @@
-# apz-pzpi-22-8-shaparenko-artem
+# apz-pzpi-22-8-shaparenko-artem  
+ПЗПІ-22-8  
+Шапаренко Артем  
+Template method  
+Тема доповіді ПЗ2  
+Програмна система для станцій обслуговування транспортних засобів  
