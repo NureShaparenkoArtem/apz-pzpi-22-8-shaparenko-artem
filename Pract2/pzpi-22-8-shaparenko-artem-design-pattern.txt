@@ -1,0 +1,290 @@
+Міністерство освіти і науки України
+Харківський національний університет радіоелектроніки
+
+
+
+Кафедра ПІ
+
+
+
+
+Звіт з практичної роботи №2
+з дисципліни «Архітектура програмного забезпечення»
+
+
+
+
+ 
+Виконав:
+ст. гр. ПЗПІ-22-8
+Шапаренко Артем Васильович
+Перевірив:
+ст. викладач каф. ПІ
+Сокорчук Ігор Петрович 
+
+
+
+
+
+
+
+Харків 2025  
+1	Історія змін
+
+Розділ призначений для відображення історії внесення змін, що наведено на табл.1:
+
+Таблиця 1 – Історія змін
+№	Дата	Версія	Опис змін	Автор
+1	10.05.2025	0.1	Створено розділ «Завдання»	Шапаренко Артем
+2	11.05.2025	0.1	Створено розділ «Опис виконаної роботи»	Шапаренко Артем
+3	11.05.2025	0.1	Створено розділ «Висновки»	Шапаренко Артем
+4	11.05.2025	0.1	Додано слайди презентації до додатку Б	Шапаренко Артем
+5	11.05.2025	0.1	Додано програмний код до Додатку В	Шапаренко Артем
+6	12.05.2025	0.1	Додано посилання на відеозапис та його хронологічний опис до додатку А	Шапаренко Артем
+
+2	ЗАВДАННЯ
+
+У рамках практичної роботи необхідно було дослідити архітектуру одного з найбільш навантажених і масштабованих додатків сучасності — Instagram. Завдання включало в себе аналіз загальної структури системи, принципів її побудови, ключових архітектурних рішень, способів взаємодії компонентів, організації зберігання даних, а також підходів до масштабування, забезпечення відмовостійкості й безпеки. Додатково було вивчено подієво-орієнтовану модель, яка є фундаментом архітектури сервісу.
+3	ОПИС ВИКОНАНОЇ РОБОТИ
+
+У процесі роботи було детально розглянуто архітектурні принципи, що лежать в основі функціонування Instagram, а також технічні засоби реалізації взаємодії між сервісами, обробки даних та забезпечення стабільної роботи під високим навантаженням.
+
+3.1.	Загальна структура системи
+
+Instagram використовує мікросервісну архітектуру, що забезпечує гнучкість, масштабованість і спрощує підтримку. Кожен мікросервіс відповідає за конкретну бізнес-функцію: обробка постів, коментарів, повідомлень, рекомендацій тощо. Такий підхід дозволяє оновлювати або масштабувати окремі частини системи незалежно одна від одної.
+
+3.2.	 Взаємодія між компонентами
+
+Комунікація між мікросервісами здійснюється як синхронно (через HTTP/gRPC), так і асинхронно — переважно за допомогою Kafka. Події, такі як лайки або коментарі, публікуються в Kafka, після чого підписані сервіси реагують відповідним чином. Це дозволяє досягти високої продуктивності й стійкості до відмов.
+
+3.3.	 Обробка запитів користувача
+
+Користувацькі запити надходять через API Gateway, який маршрутизує їх до відповідних мікросервісів. Далі може формуватися ланцюжок викликів між сервісами, що завершується підготовкою відповіді. Така побудова дозволяє реалізувати складну логіку без порушення принципів модульності.
+
+3.4.	 Архітектура зберігання даних
+
+Instagram використовує шардування та реплікацію баз даних для підвищення стійкості й масштабованості. Для зберігання медіафайлів застосовуються об’єктні сховища з доставкою через CDN, а події та логи збираються в Kafka та обробляються в Hadoop-подібних системах.
+
+3.5.	 Масштабування та відмовостійкість
+
+Кожен мікросервіс масштабовується горизонтально — при зростанні навантаження додаються нові екземпляри. Для уникнення каскадних збоїв застосовуються Circuit Breaker-механізми. Впроваджено автоматичне відновлення при збоях, що забезпечує високу надійність роботи.
+
+3.6.	 Подієво-орієнтована модель
+
+Ключова концепція — подієва архітектура: усі дії користувача транслюються у вигляді подій, які асинхронно обробляються різними сервісами. Це дозволяє ефективно масштабувати систему, мінімізувати затримки та зберігати гнучкість у розробці нових функцій.
+
+3.7.	Безпека та ізоляція
+
+Безпека забезпечується через централізовану аутентифікацію та авторизацію, ізоляцію сервісів, політики доступу та аудит логів. Кожен сервіс має лише мінімально необхідний рівень доступу, що відповідає принципам Zero Trust.
+
+ 
+4	ВИСНОВКИ
+
+У ході дослідження було виявлено, що архітектура Instagram є зразком сучасної високонавантаженої розподіленої системи. Основні її характеристики — мікросервісна побудова, подієва модель обробки, горизонтальне масштабування та висока відмовостійкість. Такий підхід дозволяє системі витримувати мільярди дій на добу без зниження продуктивності. Принципи, реалізовані в Instagram, можуть бути ефективно застосовані при створенні інших масштабованих платформ. 
+ДОДАТОК А
+Посилання на відеозапис доповіді та текст хронологічного опису доповіді
+
+Відеозапис доповіді на YouTube: https://youtu.be/B8KYIQNJctU  
+
+00:00 Представлення теми доповіді. Архітектура відомих програмних систем. Instagram
+00:27 Виділення загальної структури системи
+02:15 Взаємодія компонентів системи
+02:59 Покрокова обробка запитів користувача
+03:51 Архітектура зберігання даних
+04:42 Реалізація масштабованості та відмовостійкості
+05:22 Подієво-орієнтована архітектура
+06:05 Забезпечення безпеки: ізоляція сервісів
+06:47 Висновки стосовно архітектури
+07:29 Кінець презентації. Дяка за виділений час 
+ДОДАТОК Б
+Слайди презентації доповіді
+
+ 
+Рисунок Б.1 – Титульний слайд презентації
+
+ 
+Рисунок Б.2 – Загальна структура архітектури Instagram
+
+ 
+Рисунок Б.3 – Взаємодія компонентів
+
+ 
+Рисунок Б.4 – Кроки обробки запитів користувача
+  
+Рисунок Б.5 – Архітектура зберігання даних
+
+  
+Рисунок Б.6 – Як реалізоване масштабування та відмовостійкість
+
+
+  
+Рисунок Б.7 – Подієво-орієнтована архітектура 
+
+  
+Рисунок Б.8 – Як забезпечена безпека: ізоляція сервісів
+
+
+ 
+Рисунок Б.9 – Висновок 
+
+ 
+Рисунок Б.10 – Останній слайд  
+ДОДАТОК В
+Приклади програмного коду
+Сервіс резервацій
+
+1  @Service
+2  @EnableScheduling
+3  public class ReservationService {
+4      private final ReservationRepository reservationRepository;
+5      private final StationRepository stationRepository;
+6      private final VehicleRepository vehicleRepository;
+7      private final MechanicRepository mechanicRepository;
+
+8      @Autowired
+9      public ReservationService(ReservationRepository reservationRepository,
+10                               StationRepository stationRepository,
+11                              VehicleRepository vehicleRepository,
+12                              MechanicRepository mechanicRepository) 13{
+14         this.reservationRepository = reservationRepository;
+15         this.stationRepository = stationRepository;
+16         this.vehicleRepository = vehicleRepository;
+17         this.mechanicRepository = mechanicRepository;
+18     }
+
+19     public List<Reservation> getReservations() {
+20         return reservationRepository.findAll();
+21     }
+
+22     public Reservation createReservation(LocalDateTime reservationTime,
+23                                          LocalDateTime reservationEndTime,
+24                                          String status,
+25                                          Boolean mechanicNeed,
+26                                          Integer stationId,
+27                                          Integer vehicleId,
+28                                          Integer mechanicId) {
+29         Station station = stationRepository.findById(stationId)
+30                 .orElseThrow(() -> new IllegalArgumentException("Station not found with ID: " + stationId));
+
+31         Vehicle vehicle = vehicleRepository.findById(vehicleId)
+32                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with ID: " + vehicleId));
+
+33         Mechanic mechanic = mechanicRepository.findById(mechanicId)
+34                 .orElseThrow(() -> new IllegalArgumentException("Mechanic not found with ID: " + mechanicId));
+
+35         Float reservationPrice = (float)Math.ceil(reservationTime.until(reservationEndTime, ChronoUnit.HOURS)) * station.getHourly_price();
+
+36         Reservation reservation = new Reservation(reservationTime, reservationEndTime,
+37                 status, mechanicNeed, reservationPrice, station, vehicle, mechanicNeed ? mechanic : null);
+
+38         return reservationRepository.save(reservation);
+39     }
+
+40     public Reservation updateReservation(Integer reservationId,
+41                                          LocalDateTime reservationTime,
+42                                          LocalDateTime reservationEndTime,
+43                                          String status,
+44                                          Boolean mechanicNeed,
+45                                          Integer stationId,
+46                                          Integer vehicleId,
+47                                          Integer mechanicId) {
+48         Reservation existingReservation = reservationRepository.findById(reservationId).orElseThrow(() ->
+49                 new IllegalArgumentException("Reservation not found with ID:" + reservationId));
+
+50         Station station = stationRepository.findById(stationId)
+51                 .orElseThrow(() -> new IllegalArgumentException("Station not found with ID: " + stationId));
+
+52         Vehicle vehicle = vehicleRepository.findById(vehicleId)
+53                 .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with ID: " + vehicleId));
+
+54         Mechanic mechanic = mechanicRepository.findById(mechanicId)
+55                 .orElseThrow(() -> new IllegalArgumentException("Mechanic not found with ID: " + mechanicId));
+
+56         Float reservationPrice = (float)Math.ceil(reservationTime.until(reservationEndTime, ChronoUnit.HOURS)) * station.getHourly_price();
+
+57         existingReservation.setReservationTime(reservationTime);
+        
+58 existingReservation.setReservation_end_time(reservationEndTime);
+59         existingReservation.setStatus(status);
+60         existingReservation.setMechanicNeed(mechanicNeed);
+61         existingReservation.setPrice(reservationPrice);
+62         existingReservation.setStation(station);
+63         existingReservation.setVehicle(vehicle);
+64         existingReservation.setMechanic(mechanic);
+
+65         return reservationRepository.save(existingReservation);
+66     }
+
+67     public void deleteReservation(Integer reservationId) {
+68         if (!reservationRepository.existsById(reservationId)){
+69             throw new IllegalArgumentException("Reservation not found with ID:" + reservationId);
+70         }
+71         reservationRepository.deleteById(reservationId);
+72     }
+
+73     @Scheduled(cron = "0 0/15 * * * ?")
+74     public void occupyStation() {
+75         LocalDateTime currentTime = LocalDateTime.now().withSecond(0).withNano(0);
+76         int updatedReservations = 0;
+77         List<Reservation> activeReservations = reservationRepository.findByReservationTime(currentTime);
+
+78         for (Reservation reservation: activeReservations) {
+79             Station station = reservation.getStation();
+80             station.setIs_free(false);
+81             stationRepository.save(station);
+82             updatedReservations++;
+83         }
+84         System.out.println("[" + currentTime + "] Stations occupied: " + updatedReservations);
+85     }
+
+86     public void updateReservationPrice(Integer reservationId, Float mechanicPrice) {
+87         Reservation existingReservation = reservationRepository.findById(reservationId).orElseThrow(() ->
+88                 new IllegalArgumentException("Reservation not found with ID:" + reservationId));
+
+89         existingReservation.setPrice(existingReservation.getPrice() + mechanicPrice);
+
+90         reservationRepository.save(existingReservation);
+91     }
+92 }
+ 
+Сервіс користувача
+
+1  @Service
+2  public class UserService {
+3      private final UserRepository userRepository;
+
+4      @Autowired
+5      public UserService(UserRepository userRepository) {
+6          this.userRepository = userRepository;
+7      }
+
+8      public List<User> getUsers(){
+9          return userRepository.findAll();
+10     }
+
+11     public User createUser(String firstName, String lastName, String phone, String email, String password) {
+12         User user = new User(firstName, lastName, phone, email, password);
+
+13         return userRepository.save(user);
+14     }
+
+15     public User updateUser(Integer userId, String firstName, String lastName, String phone, String email, String password){
+16         User existingUser = userRepository.findById(userId).orElseThrow(() ->
+17                 new IllegalArgumentException("User not found with ID:" + userId));
+
+18         existingUser.setFirst_name(firstName);
+19         existingUser.setLast_name(lastName);
+20         existingUser.setPhone(phone);
+21         existingUser.setEmail(email);
+22         existingUser.setPassword(password);
+
+23         return userRepository.save(existingUser);
+24     }
+
+25     public void deleteUser(Integer userId){
+26         if (!userRepository.existsById(userId)){
+27             throw new IllegalArgumentException("User not found with ID:" + userId);
+28         }
+29         userRepository.deleteById(userId);
+30     }
+31 }
