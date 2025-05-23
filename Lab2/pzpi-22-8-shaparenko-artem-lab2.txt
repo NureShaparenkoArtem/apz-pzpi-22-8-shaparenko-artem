@@ -243,10 +243,10 @@
 Графічні матеріали
 
  
-Рисунок Б.1 – UML діаграма розгортання
+Рисунок Б.1 – ER-модель даних
 
  
-Рисунок Б.2 – ER-модель даних
+Рисунок Б.2 – Структура бази даних
  
 Рисунок Б.3 – UML діаграма прецедентів
 
@@ -258,12 +258,106 @@
 Додаток В
 Програмний код 
 
-В.1 Створення резервної копії бази даних
+		В.1 Математична обробка прикладних даних
+
+StationService.java:
+
+GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-22-8-shaparenko-artem/blob/main/Lab2/pzpi-22-8-shaparenko-artem-lab2/station/StationService.java
+
+1	public Float getStationEarningsForPeriod(Integer stationId, LocalDateTime from, 
+2	LocalDateTime to) {
+3          List<Reservation> reservations = 
+4  reservationRepository.findByStationAndDateRange(stationId, from, to);
+5          return reservations.stream()
+6                  .map(Reservation::getPrice)
+7                  .reduce(0f, Float::sum);
+8      }
+
+9      public Float getMonthlyEarnings(Integer stationId) {
+10         LocalDateTime now = LocalDateTime.now();
+11         LocalDateTime startOfMonth = 
+12 now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+13         return getStationEarningsForPeriod(stationId, startOfMonth, now);
+14     }
+
+15     public Float getYearlyEarnings(Integer stationId) {
+16         LocalDateTime now = LocalDateTime.now();
+17         LocalDateTime startOfYear = 
+18 now.withDayOfYear(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+19         return getStationEarningsForPeriod(stationId, startOfYear, now);
+20     }
+
+21     public Float getAverageMonthlyEarningsForLastYear(Integer stationId) {
+22         LocalDateTime now = LocalDateTime.now();
+23         LocalDateTime oneYearAgo = now.minusYears(1);
+24         Float total = getStationEarningsForPeriod(stationId, oneYearAgo, now);
+25         return total / 12f;
+26     }
+
+	В.2 Адміністрування бізнес-логіки системи
+
+ReservationController.java
+
+GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-22-8-shaparenko-artem/blob/main/Lab2/pzpi-22-8-shaparenko-artem-lab2/reservation/ReservationController.java 
+
+1  @PutMapping(path = "/{reservationId}")
+2      public Reservation updateReservation(@PathVariable Integer reservationId,
+3                                           @Parameter(schema = @Schema(type = "string", 4  format = "date-time"))
+5                                               @RequestParam LocalDateTime 
+6  reservation_time,
+7                                           @Parameter(schema = @Schema(type = "string", 
+8  format = "date-time"))
+9                                               @RequestParam LocalDateTime 
+10 reservation_end_time,
+11                                          @RequestParam String status,
+12                                          @RequestParam Boolean mechanic_need,
+13                                          @RequestParam Integer station_id,
+14                                          @RequestParam Integer vehicle_id,
+15                                          @RequestParam Integer mechanic_id) {
+16         return reservationService.updateReservation(reservationId, reservation_time, 
+17 reservation_end_time,
+18                 status, mechanic_need, station_id, vehicle_id, mechanic_id);
+19     }
+
+20     @DeleteMapping(path = "/{reservationId}")
+21     public void deleteReservation(@PathVariable Integer reservationId) {
+22         reservationService.deleteReservation(reservationId);
+23     }
+
+StationController.java
+
+GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-22-8-shaparenko-artem/blob/main/Lab2/pzpi-22-8-shaparenko-artem-lab2/station/StationController.java 
+
+1  @PutMapping(path = "/{stationId}")
+2      public Station updateStation(@PathVariable Integer stationId,
+3                                   @RequestParam String station_name,
+4                                   @RequestParam String station_type,
+5                                   @RequestParam String location,
+6                                   @Parameter(schema = @Schema(type = "string", format 
+7  = "time"))
+8                                   @RequestParam @DateTimeFormat(pattern = "HH:mm") 
+9  LocalTime opening_time,
+10                                  @Parameter(schema = @Schema(type = "string", format 
+11 = "time"))
+12                                  @RequestParam @DateTimeFormat(pattern = "HH:mm") 
+13 LocalTime closing_time,
+14                                  @RequestParam Integer owner_id,
+15                                  @RequestParam Float hourly_price,
+16                                  @RequestParam String available_tools) {
+17         return stationService.updateStation(stationId, station_name, station_type, 
+18 location, opening_time, closing_time, owner_id, hourly_price, available_tools);
+19     }
+
+20     @DeleteMapping(path = "/{stationId}")
+21     public void deleteStation(@PathVariable Integer stationId) {
+22         stationService.deleteStation(stationId);
+23     }
+
+В.3 Резервне копіювання користувацьких даних
 
 BackupProperties.java
 
 GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-22-8-shaparenko-artem/blob/main/Lab2/pzpi-22-8-shaparenko-artem-lab2/backup/BackupProperties.java 
-
 
 1  @Setter
 2  @Getter
@@ -276,7 +370,6 @@ GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-2
 9      private String database;
 10     private String path;
 11 }
-
 BackupConfig.java
 
 GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-22-8-shaparenko-artem/blob/main/Lab2/pzpi-22-8-shaparenko-artem-lab2/backup/BackupConfig.java 
@@ -373,85 +466,6 @@ GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-2
 14                 ResponseEntity.status(500).body("Failed to create backup.");
 15     }
 16 }
-
-	В.2 Розклад відкриття-закриття станцій обслуговування
-
-StationService.java
-
-GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-22-8-shaparenko-artem/blob/main/Lab2/pzpi-22-8-shaparenko-artem-lab2/station/StationService.java 
-
-1  @Scheduled(cron = "0 0/15 7-12 * * ?")
-2      public void openStations() {
-3          LocalTime currentTime = LocalTime.now().withSecond(0).withNano(0);
-4          int updatedStations = 0;
-5          List<Station> stations = stationRepository.findByOpeningTime(currentTime);
-
-6          for (Station station: stations) {
-7              List<Reservation> reservations = 
-8  reservationRepository.findByStationAndReservationTime(station,
-9                      LocalDateTime.now().withSecond(0).withNano(0));
-10             Boolean isStationOccupied = !reservations.isEmpty();
-11             if (!isStationOccupied) {
-12                 station.setIs_free(true);
-13                 stationRepository.save(station);
-14                 updatedStations++;
-15             }
-16         }
-
-17         System.out.println("[" + currentTime + "] Stations opened: " + 
-18 updatedStations);
-19     }
-
-20     @Scheduled(cron = "0 0/15 15-23 * * ?")
-21     public void closeStations() {
-22         LocalTime currentTime = LocalTime.now().withSecond(0).withNano(0);
-23         int updatedStations = 0;
-24         List<Station> stations = stationRepository.findByClosingTime(currentTime);
-
-25         for (Station station: stations) {
-26             station.setIs_free(false);
-27             stationRepository.save(station);
-28             updatedStations++;
-29         }
-30         System.out.println("[" + currentTime + "] Stations closed: " + 
-31 updatedStations);
-32     }
-
-В.3 Аналітика дохідності станцій обслуговування
-
-StationService.java:
-
-GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-22-8-shaparenko-artem/blob/main/Lab2/pzpi-22-8-shaparenko-artem-lab2/station/StationService.java
-
-1	public Float getStationEarningsForPeriod(Integer stationId, LocalDateTime from, 
-2	LocalDateTime to) {
-3          List<Reservation> reservations = 
-4  reservationRepository.findByStationAndDateRange(stationId, from, to);
-5          return reservations.stream()
-6                  .map(Reservation::getPrice)
-7                  .reduce(0f, Float::sum);
-8      }
-
-9      public Float getMonthlyEarnings(Integer stationId) {
-10         LocalDateTime now = LocalDateTime.now();
-11         LocalDateTime startOfMonth = 
-12 now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-13         return getStationEarningsForPeriod(stationId, startOfMonth, now);
-14     }
-
-15     public Float getYearlyEarnings(Integer stationId) {
-16         LocalDateTime now = LocalDateTime.now();
-17         LocalDateTime startOfYear = 
-18 now.withDayOfYear(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-19         return getStationEarningsForPeriod(stationId, startOfYear, now);
-20     }
-
-21     public Float getAverageMonthlyEarningsForLastYear(Integer stationId) {
-22         LocalDateTime now = LocalDateTime.now();
-23         LocalDateTime oneYearAgo = now.minusYears(1);
-24         Float total = getStationEarningsForPeriod(stationId, oneYearAgo, now);
-25         return total / 12f;
-26     }
  
 ДОДАТОК Г
 Специфікація REST API
