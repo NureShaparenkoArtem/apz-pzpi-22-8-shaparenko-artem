@@ -1,0 +1,508 @@
+Міністерство освіти і науки України
+Харківський національний університет радіоелектроніки
+
+
+
+Кафедра ПІ
+
+
+
+
+Звіт з лабораторної роботи №2
+з дисципліни «Архітектура програмного забезпечення»
+
+
+
+
+ 
+Виконав:
+ст. гр. ПЗПІ-22-8
+Шапаренко Артем Васильович
+Перевірив:
+ст. викладач каф. ПІ
+Сокорчук Ігор Петрович 
+
+
+
+
+
+
+
+Харків 2025  
+1 ІСТОРІЯ ЗМІН
+
+У цьому розділі наведено історію внесених змін до документу, що наведено у табл. 1.
+
+Таблиця 1 – Історія змін
+
+№	Дата	Версія	Опис змін та виправлень
+1	17.05.2025	0.1	Наведення завдань для виконання до лабораторної роботи
+2	19.05.2025	0.1	Формування опису виконаної роботи
+3	20.05.2025	0.1	Сформовані результати та висновки
+4	20.05.2025	0.1	Сформовані додатки
+
+ 
+2 ЗАВДАННЯ
+
+Метою лабораторної роботи є вдосконалення серверної частини програмної системи «SeStans» — рішення, призначеного для організації процесу онлайн-резервування станцій обслуговування транспортних засобів, таких як СТО, автомийки, шиномонтажні станції тощо. У системі взаємодіють кілька ключових ролей: власники станцій, які керують роботою сервісних точок; майстри, що безпосередньо виконують обслуговування; а також кінцеві користувачі — водії, які здійснюють бронювання. У межах цієї роботи передбачено аналіз наявної архітектури, оцінку реалізованої бізнес-логіки та формулювання напрямків для її подальшого розвитку.
+Особлива увага приділяється впровадженню нових компонентів, що покликані підвищити ефективність управління станціями обслуговування. Зокрема, було реалізовано математичний розрахунок прибутку станції на основі актуальних замовлень і виконаних послуг. Такий підхід дає змогу зробити аналітику системи більш прикладною та корисною для прийняття управлінських рішень. Крім того, у серверну частину було додано механізм автоматичного щоденного створення резервних копій бази даних, що підвищує надійність зберігання даних і стійкість системи до потенційних збоїв. Також реалізовано перевірку графіків роботи станцій: система контролює дотримання заявленого часу відкриття та закриття, що дозволяє підвищити точність і якість обслуговування користувачів.
+ 
+3 ОПИС ВИКОНАНОЇ РОБОТИ
+
+У цьому розділі наведено аналіз існуючих компонентів серверної частини програмної системи «SeStans» та розглянуто реалізовані підходи до розширення її бізнес-логіки. Система реалізована з використанням багаторівневої архітектури, що забезпечує чітке розділення відповідальностей між різними складовими. Такий підхід сприяє гнучкості, масштабованості та спрощує супровід і розширення функціональності.
+Архітектура серверної частини системи включає наступні основні компоненти:
+	Сутності (Entity-класи), які відображають структуру таблиць у базі даних і визначають основні атрибути об’єктів, з якими працює система;
+	Репозиторії, що реалізують доступ до даних і забезпечують операції читання, запису, оновлення та видалення інформації з бази даних PostgreSQL. Для абстрагування від конкретної реалізації збереження даних застосовано патерн Repository;
+	Сервісний рівень, де реалізовано основну бізнес-логіку системи, зокрема обробку запитів, розрахунки, перевірки, трансформацію даних тощо;
+	Контролери, через які здійснюється обробка HTTP-запитів від клієнтських додатків, маршрутизація запитів до відповідних сервісів та повернення результатів у вигляді відповідей.
+У процесі розширення функціональності було зосереджено увагу на розвитку бізнес-логіки. Серед основних доповнень — реалізація розрахунку прибутку станції обслуговування, щоденне автоматизоване створення резервних копій бази даних та перевірка станцій на відповідність графіку роботи. Графічні матеріали, що ілюструють архітектуру системи, представлені у додатку Б.
+3.1 Компоненти серверної частини
+
+Серверна частина програмної системи «SeStans» реалізована з використанням фреймворку Spring Boot та слідує принципам REST-архітектури. Система надає RESTful API для взаємодії з клієнтськими додатками. Ключовими компонентами є контролери, що відповідають за обробку HTTP-запитів і передачу даних до відповідних сервісів:
+	UserController – керування обліковими записами користувачів системи;
+	DriverController – обробка інформації про водіїв та їх транспортні засоби;
+	MechanicController – взаємодія з майстрами станцій техобслуговування;
+	StationController – керування станціями обслуговування, включаючи їхній графік роботи;
+	OwnerController – функціонал для власників сервісних станцій;
+	VehicleController – керування даними про автомобілі;
+	ReservationController – реалізація логіки бронювання послуг на станціях.
+Для взаємодії з базою даних використовується JPA (Java Persistence API) з використанням Hibernate як провайдера. Це забезпечує об'єктно-реляційне відображення моделей на таблиці у базі даних PostgreSQL. Основні сутності (Entity-класи), які використовуються у системі:
+	User – облікові дані та профілі користувачів;
+	Driver – дані про водіїв, які здійснюють резервування;
+	Mechanic – інформація про майстрів, які виконують технічне обслуговування;
+	Owner – власники станцій техобслуговування;
+	Station – дані про станції, їхнє розташування, графік роботи тощо;
+	Vehicle – транспортні засоби користувачів;
+	Reservation – дані про здійснені бронювання та їхній статус.
+Підключення до IoT-пристроїв реалізовано за допомогою MQTT-протоколу. Серверна частина підписується на відповідні топіки у MQTT-брокері для отримання повідомлень у реальному часі. Це дозволяє фіксувати події, пов’язані з обслуговуванням, та використовувати ці дані у подальшому аналізі або автоматизації бізнес-логіки.
+Адміністративний функціонал включає створення та відновлення резервної копії бази даних, керування даними в БД.
+Безпека системи реалізована за допомогою механізму автентифікації та авторизації на базі JWT-токенів, що дозволяє гнучко керувати доступом до функцій на основі ролей користувачів.
+У реалізації серверної частини «SeStans» використано такі основні технології та компоненти:
+	Spring Boot – фреймворк для створення масштабованих веб-додатків і API;
+	JPA (Hibernate) – ORM для доступу до бази даних;
+	PostgreSQL – система керування реляційними базами даних;
+	Lombok – бібліотека для автоматичної генерації шаблонного коду;
+	Swagger – інструмент для автоматичної генерації документації;
+	MQTT – протокол публікації/підписки для інтеграції з IoT-пристроями.
+3.2 Бізнес-логіка системи
+
+Бізнес-логіка програмної системи «SeStans» спрямована на автоматизацію процесів резервування послуг станцій технічного обслуговування транспортних засобів, забезпечення ефективної взаємодії між користувачами системи та оптимізацію роботи самих станцій.
+Серед ключових аспектів бізнес-логіки – обробка запитів на бронювання, перевірка доступності станції в обраний час з урахуванням її графіка роботи, а також запобігання конфліктам у розкладі. Система дозволяє водіям створювати бронювання для обраних станцій та послуг, а майстрам – переглядати список призначених їм завдань. Графік роботи станції автоматично перевіряється при створенні нових бронювань, що дозволяє уникнути некоректних записів у неробочий час.
+Окремим напрямом розвитку бізнес-логіки є впровадження аналітичних можливостей. У системі реалізовано механізм розрахунку прибутку для кожної станції на основі даних про виконані послуги. Це дозволяє власникам станцій здійснювати моніторинг фінансових показників у динаміці. Також запроваджено автоматичне щоденне створення резервної копії бази даних, що забезпечує надійність та збереження критично важливої інформації.
+
+3.3 Розширення системи
+3.3.1 Аналітика доходів станцій
+
+Методи для розрахунку фінансової ефективності реалізовано в окремому сервісі, де на основі історії бронювань обчислюються наступні показники: дохідності за вказаний період, місяць, рік та середня дохідність за місяць у поточний рік.
+1 public Float getStationEarningsForPeriod(Integer stationId, LocalDateTime from, 
+2   LocalDateTime to) {
+3  	List<Reservation> reservations =
+4 	reservationRepository.findByStationAndDateRange(stationId, from, to);
+5      return reservations.stream()
+6                  .map(Reservation::getPrice)
+7                  .reduce(0f, Float::sum);
+8  }
+
+9  public Float getMonthlyEarnings(Integer stationId) {
+10         LocalDateTime now = LocalDateTime.now();
+11         LocalDateTime startOfMonth = 
+12 	    now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+13         return getStationEarningsForPeriod(stationId, startOfMonth, now);
+15 }
+
+16 public Float getYearlyEarnings(Integer stationId) {
+17      LocalDateTime now = LocalDateTime.now();
+18      LocalDateTime startOfYear = 
+19	 now.withDayOfYear(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+20      return getStationEarningsForPeriod(stationId, startOfYear, now);
+21 }
+
+22 public Float getAverageMonthlyEarningsForLastYear(Integer stationId) {
+23      LocalDateTime now = LocalDateTime.now();
+24      LocalDateTime oneYearAgo = now.minusYears(1);
+25      Float total = getStationEarningsForPeriod(stationId, oneYearAgo, now);
+26      return total / 12f;
+27 }
+
+Це дозволяє власникам станцій отримувати прозорі звіти про прибутковість обладнання, оцінювати його ефективність та приймати обґрунтовані бізнес-рішення.
+
+3.3.2 Розклад відкриття-закриття станцій
+
+У зв’язку з тим, що деякі станції працюють лише у визначені години (наприклад, на паркінгах торгових центрів, у громадських місцях, тощо), виникає необхідність автоматично змінювати їхній статус в системі: відкривати на початку робочого дня та закривати ввечері.
+Для цього реалізовано два планувальники, які виконуються кожні 15 хвилин у відповідні часові проміжки:
+
+1  @Scheduled(cron = "0 0/15 7-12 * * ?")
+2      public void openStations() {
+3          LocalTime currentTime = LocalTime.now().withSecond(0).withNano(0);
+4          int updatedStations = 0;
+5          List<Station> stations = stationRepository.findByOpeningTime(currentTime);
+
+6          for (Station station: stations) {
+7              List<Reservation> reservations = 
+8  reservationRepository.findByStationAndReservationTime(station,
+9                      LocalDateTime.now().withSecond(0).withNano(0));
+10             Boolean isStationOccupied = !reservations.isEmpty();
+11             if (!isStationOccupied) {
+12                 station.setIs_free(true);
+13                 stationRepository.save(station);
+14                 updatedStations++;
+15             }
+16         }
+
+17         System.out.println("[" + currentTime + "] Stations opened: " + 
+18 updatedStations);
+19     }
+
+20     @Scheduled(cron = "0 0/15 15-23 * * ?")
+21     public void closeStations() {
+22         LocalTime currentTime = LocalTime.now().withSecond(0).withNano(0);
+23         int updatedStations = 0;
+24         List<Station> stations = stationRepository.findByClosingTime(currentTime);
+
+25         for (Station station: stations) {
+26             station.setIs_free(false);
+27             stationRepository.save(station);
+28             updatedStations++;
+29         }
+30         System.out.println("[" + currentTime + "] Stations closed: " + 
+31 updatedStations);
+32     }
+
+Таким чином забезпечується автоматична відповідність стану станції її графіку роботи. У випадку, якщо на певний час заплановано бронювання — станція не буде відкритою повторно, що дозволяє уникнути конфліктів та збоїв у роботі системи.
+
+3.3.3 Резервне копіювання бази даних та її автоматизація
+
+Для забезпечення збереження даних та готовності до відновлення у випадку збоїв, втрати доступу чи інших критичних ситуацій, у системі SeStans реалізовано механізм резервного копіювання бази даних. Бекап створюється щоденно о 02:00 ранку за допомогою системного інструменту pg_dump. Перед створенням нового бекапу старий файл (якщо існує) видаляється.
+
+1  @Scheduled(cron = "0 0 2 * * *")
+2      public void scheduledBackup() {
+3          performBackup();
+4      }
+
+5      public boolean performBackup() {
+6          String backupFilePath = properties.getPath() + "backup.sql";
+7          File backupFile = new File(backupFilePath);
+
+8          if (backupFile.exists() && !backupFile.delete()) {
+9              System.err.println("Error while deleting old backup: " + backupFilePath);
+10             return false;
+11         }
+
+12         List<String> command = Arrays.asList(
+13                 "pg_dump",
+14                 "-U", properties.getUser(),
+15                 "-h", properties.getHost(),
+16                 "-p", properties.getPort(),
+17                 "-F", "c",
+18                 "-f", backupFilePath,
+19                 properties.getDatabase()
+20         );
+
+21         ProcessBuilder pb = new ProcessBuilder(command);
+22         pb.environment().put("PGPASSWORD", properties.getPassword());
+
+23         try {
+24             Process process = pb.start();
+25             int exitCode = process.waitFor();
+26             if (exitCode == 0) {
+27                 System.out.println("Backup created: " + backupFilePath);
+28                 return true;
+29             } else {
+30                 System.err.println("Backup error. Exit code: " + exitCode);
+31                 return false;
+32             }
+33         } catch (IOException | InterruptedException e) {
+34             e.printStackTrace();
+35             return false;
+36         }
+37     }
+
+Реалізація є повністю автоматизованою, не потребує втручання адміністратора, і дозволяє створювати архіви для подальшого збереження або переміщення до хмарних сховищ чи зовнішніх систем моніторингу. За необхідності, адміністрація може створити резервну копію у будь-який час за допомогою HTTP-запиту.
+ 
+4 ВИСНОВКИ
+
+У результаті виконання роботи було розширено функціональність серверної частини системи SeStans, що дозволило суттєво підвищити її зручність, надійність та аналітичні можливості.
+Зокрема, було реалізовано аналітику фінансової ефективності, що надає власникам станцій інструменти для оцінки доходності обладнання за різні періоди. Це створює підґрунтя для прийняття обґрунтованих бізнес-рішень та оптимізації використання станцій.
+Крім того, впроваджено автоматичне керування станом станцій відповідно до графіку їхньої роботи. Завдяки періодичним задачам система самостійно відкриває або закриває станції, враховуючи поточні бронювання. Це забезпечує узгодженість між реальним станом обладнання та його логічним представленням у системі, мінімізуючи ризики конфліктів і збоїв.
+Також реалізовано автоматизовану систему резервного копіювання бази даних, яка щоденно створює бекап у визначений час, видаляючи попередній файл. Рішення є повністю автономним та не потребує ручного втручання, забезпечуючи готовність до відновлення у випадку аварій.
+
+ 
+ДОДАТОК А
+Посилання на відеозапис доповіді та текст хронологічного опису доповіді
+
+Відеозапис доповіді на YouTube: https://youtu.be/MCw5cZTOChQ 
+
+	00:00 Вступ
+01:00 Методи з забезпечення робочого розкладу станцій обслуговування.
+01:24 Демонстрація працездатності методів. Логування у консоль.
+02:00 Методи з аналітичної звітності добутку станцій.
+03:33 Демонстрація працездатності методів звітності.
+04:12 Запровадження створення резервної копії бази даних.
+06:01 Демонстрація працездатності зі створення резервної копії бази даних. 
+ДОДАТОК Б
+Графічні матеріали
+
+ 
+Рисунок Б.1 – UML діаграма розгортання
+
+ 
+Рисунок Б.2 – ER-модель даних
+ 
+Рисунок Б.3 – UML діаграма прецедентів
+
+ 
+Рисунок Б.4 – Продовження UML діаграми прецедентів
+ 
+Рисунок Б.5 – UML діаграма діяльності
+ 
+Додаток В
+Програмний код
+
+GitHub репозиторій: 
+
+В.1 Створення резервної копії бази даних
+
+BackupProperties.java:
+
+1  @Setter
+2  @Getter
+3  @Component
+4  public class BackupProperties {
+5      private String host;
+6      private String port;
+7      private String user;
+8      private String password;
+9      private String database;
+10     private String path;
+11 }
+
+BackupConfig.java:
+
+1 @Configuration
+2 public class BackupConfig {
+3     @Bean
+4     @ConfigurationProperties(prefix = "backup.postgres")
+5     public BackupProperties backupProperties() {
+6         return new BackupProperties();
+7     }
+8 }
+ 
+BackupService.java:
+
+1  @Service
+2  @EnableScheduling
+3  public class BackupService {
+
+4      private final BackupProperties properties;
+
+5      @Autowired
+6      public BackupService(BackupProperties properties) {
+7          this.properties = properties;
+8      }
+
+9      @Scheduled(cron = "0 0 2 * * *")
+10     public void scheduledBackup() {
+11         performBackup();
+12     }
+
+13     public boolean performBackup() {
+14         String backupFilePath = properties.getPath() + "backup.sql";
+15         File backupFile = new File(backupFilePath);
+
+16         if (backupFile.exists() && !backupFile.delete()) {
+17             System.err.println("Error while deleting old backup: " + 
+18 backupFilePath);
+19             return false;
+20         }
+
+21         List<String> command = Arrays.asList(
+22                 "pg_dump",
+23                 "-U", properties.getUser(),
+24                 "-h", properties.getHost(),
+25                 "-p", properties.getPort(),
+26                 "-F", "c",
+27                 "-f", backupFilePath,
+28                 properties.getDatabase()
+29         );
+
+30         ProcessBuilder pb = new ProcessBuilder(command);
+31         pb.environment().put("PGPASSWORD", properties.getPassword());
+
+32         try {
+33             Process process = pb.start();
+34             int exitCode = process.waitFor();
+35             if (exitCode == 0) {
+36                 System.out.println("Backup created: " + backupFilePath);
+37                 return true;
+38             } else {
+39                 System.err.println("Backup error. Exit code: " + exitCode);
+40                 return false;
+41             }
+42         } catch (IOException | InterruptedException e) {
+43             e.printStackTrace();
+44             return false;
+45         }
+46     }
+47 }
+
+BackupController.java:
+
+1  @RestController
+2  @RequestMapping("/api/v1/backup")
+3  public class BackupController {
+
+4      private final BackupService backupService;
+
+5      @Autowired
+6      public BackupController(BackupService backupService) {
+7          this.backupService = backupService;
+8      }
+
+9      @PostMapping
+10     public ResponseEntity<String> createBackup() {
+11         boolean result = backupService.performBackup();
+12         return result ?
+13                 ResponseEntity.ok("Backup successfully created.") :
+14                 ResponseEntity.status(500).body("Failed to create backup.");
+15     }
+16 }
+
+	В.2 Розклад відкриття-закриття станцій обслуговування
+
+StationService.java:
+
+1  @Scheduled(cron = "0 0/15 7-12 * * ?")
+2      public void openStations() {
+3          LocalTime currentTime = LocalTime.now().withSecond(0).withNano(0);
+4          int updatedStations = 0;
+5          List<Station> stations = stationRepository.findByOpeningTime(currentTime);
+
+6          for (Station station: stations) {
+7              List<Reservation> reservations = 
+8  reservationRepository.findByStationAndReservationTime(station,
+9                      LocalDateTime.now().withSecond(0).withNano(0));
+10             Boolean isStationOccupied = !reservations.isEmpty();
+11             if (!isStationOccupied) {
+12                 station.setIs_free(true);
+13                 stationRepository.save(station);
+14                 updatedStations++;
+15             }
+16         }
+
+17         System.out.println("[" + currentTime + "] Stations opened: " + 
+18 updatedStations);
+19     }
+
+20     @Scheduled(cron = "0 0/15 15-23 * * ?")
+21     public void closeStations() {
+22         LocalTime currentTime = LocalTime.now().withSecond(0).withNano(0);
+23         int updatedStations = 0;
+24         List<Station> stations = stationRepository.findByClosingTime(currentTime);
+
+25         for (Station station: stations) {
+26             station.setIs_free(false);
+27             stationRepository.save(station);
+28             updatedStations++;
+29         }
+30         System.out.println("[" + currentTime + "] Stations closed: " + 
+31 updatedStations);
+32     }
+
+В.3 Аналітика дохідності станцій обслуговування
+
+StationService.java:
+
+1	public Float getStationEarningsForPeriod(Integer stationId, LocalDateTime from, 
+2	LocalDateTime to) {
+3          List<Reservation> reservations = 
+4  reservationRepository.findByStationAndDateRange(stationId, from, to);
+5          return reservations.stream()
+6                  .map(Reservation::getPrice)
+7                  .reduce(0f, Float::sum);
+8      }
+
+9      public Float getMonthlyEarnings(Integer stationId) {
+10         LocalDateTime now = LocalDateTime.now();
+11         LocalDateTime startOfMonth = 
+12 now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+13         return getStationEarningsForPeriod(stationId, startOfMonth, now);
+14     }
+
+15     public Float getYearlyEarnings(Integer stationId) {
+16         LocalDateTime now = LocalDateTime.now();
+17         LocalDateTime startOfYear = 
+18 now.withDayOfYear(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+19         return getStationEarningsForPeriod(stationId, startOfYear, now);
+20     }
+
+21     public Float getAverageMonthlyEarningsForLastYear(Integer stationId) {
+22         LocalDateTime now = LocalDateTime.now();
+23         LocalDateTime oneYearAgo = now.minusYears(1);
+24         Float total = getStationEarningsForPeriod(stationId, oneYearAgo, now);
+25         return total / 12f;
+26     }
+ 
+ДОДАТОК Г
+Специфікація REST API
+
+Таблиця Г.1 – Маршрут /api/v1/vehicle
+Посилання	Метод	Параметри	Опис
+{vehicleId}	PUT	license_plate, make, vehicle_type, model	Оновлення транспортного засобу
+{vehicleId}	DELETE		Видалення транспортного засобу
+	GET	driver_id	Отримання транспортного засобу
+	POST	license_plate, make, vehicle_type, model	Створення нового транспортного засобу
+
+Таблиця Г.2 – Маршрут api/v1/user
+Посилання	Метод	Параметри	Опис
+{userId}	PUT	first_name, last_name, phone, email, password	Оновлення інформації о користувачі
+{userId}	DELETE		Видалення облікового запису
+	GET		Отримання облікового запису
+	POST	first_name, last_name, phone, email, password	Створення облікового запису
+
+ 
+Таблиця Г.3 – Маршрут /api/v1/station
+Посилання	Метод	Параметри	Опис
+	GET		Отримання станцій
+	PUT	stationId, isFree	Оновлення зайнятості станції
+	POST	station_name, station_type, location, opening_time, closing_time, owner, hourly_price, available_tools	Створення нової станції
+{stationId}	PUT	station_name, station_type, location, opening_time, closing_time, owner, hourly_price, available_tools	Оновлення інформації о станції
+{stationId}	DELETE		Видалення станції
+getYearEarn/{stationId}	GET		Отримання доходу станції за поточний рік
+getMonthEarn/{stationId}	GET		Отримання доходу станції за поточний місяць
+getAvgMonthEarn/{stationId}	GET		Отримання середнього місячного доходу станції
+
+Таблиця Г.4 – Маршрут /api/v1/reservation
+Посилання	Метод	Параметри	Опис
+	GET		Отримання резервації
+{reservationId}	PUT	mechanicPrice	Додавання послуги механіка
+	POST	reservation_time, status, mechanic_need, station_id, vehicle_id	Створення нової резервації
+{reservationId}	PUT	reservation_time, reservation_end_time, status, mechanic_need, station_id, vehicle_id	Оновлення резервації
+{reservationId}	DELETE		Видалення резервації
+
+ 
+Таблиця Г.5 – Маршрут /api/v1/owner
+Посилання	Метод	Параметри	Опис
+{ownerId}	PUT	company_name	Оновлення інформацію о власнику станції
+{ownerId}	DELETE		Видалення власника станції
+	GET		Отримання інформації о власнику станції
+	POST	company_name, user_id	Створення нового власника станції
+
+Таблиця Г.6 – Маршрут /api/v1/mechanic
+Посилання	Метод	Параметри	Опис
+{mechanicId}	PUT	experience, specification, mechanic_profit	Оновлення інформації про механіка
+{mechanicId}	DELETE		Видалення механіка
+	GET		Отримання інформації про механіка
+	POST	experience, specification, user_id, mechanic_profit	Створення нового механіка
+
+ 
+Таблиця Г.7 – Маршрут /api/v1/driver
+Посилання	Метод	Параметри	Опис
+{driverId}	PUT	driver_license	Оновлення інформації про водія
+{driverId}	DELETE		Видалення водія
+	GET		Отримання інформації про водія
+	POST	driver_license, user_id	Створення нового водія
+
+Таблиця Г.8 – Маршрут /api/v1/backup
+Посилання	Метод	Параметри	Опис
+	POST		Створення нового файлу резервної копії бази даних
+
