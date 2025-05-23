@@ -31,7 +31,7 @@
 Харків 2025  
 1 ІСТОРІЯ ЗМІН
 
-У цьому розділі наведено історію внесених змін до документу, що наведено у табл. 1.
+У цьому розділі наведено історію внесених змін до документу, що наведено у табл. 1:
 
 Таблиця 1 – Історія змін
 
@@ -256,13 +256,14 @@
 Рисунок Б.5 – UML діаграма діяльності
  
 Додаток В
-Програмний код
-
-GitHub репозиторій: 
+Програмний код 
 
 В.1 Створення резервної копії бази даних
 
-BackupProperties.java:
+BackupProperties.java
+
+GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-22-8-shaparenko-artem/blob/main/Lab2/pzpi-22-8-shaparenko-artem-lab2/backup/BackupProperties.java 
+
 
 1  @Setter
 2  @Getter
@@ -276,7 +277,9 @@ BackupProperties.java:
 10     private String path;
 11 }
 
-BackupConfig.java:
+BackupConfig.java
+
+GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-22-8-shaparenko-artem/blob/main/Lab2/pzpi-22-8-shaparenko-artem-lab2/backup/BackupConfig.java 
 
 1 @Configuration
 2 public class BackupConfig {
@@ -286,8 +289,10 @@ BackupConfig.java:
 6         return new BackupProperties();
 7     }
 8 }
- 
-BackupService.java:
+
+BackupService.java
+
+GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-22-8-shaparenko-artem/blob/main/Lab2/pzpi-22-8-shaparenko-artem-lab2/backup/BackupService.java 
 
 1  @Service
 2  @EnableScheduling
@@ -345,7 +350,9 @@ BackupService.java:
 46     }
 47 }
 
-BackupController.java:
+BackupController.java
+
+GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-22-8-shaparenko-artem/blob/main/Lab2/pzpi-22-8-shaparenko-artem-lab2/backup/BackupController.java 
 
 1  @RestController
 2  @RequestMapping("/api/v1/backup")
@@ -369,7 +376,9 @@ BackupController.java:
 
 	В.2 Розклад відкриття-закриття станцій обслуговування
 
-StationService.java:
+StationService.java
+
+GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-22-8-shaparenko-artem/blob/main/Lab2/pzpi-22-8-shaparenko-artem-lab2/station/StationService.java 
 
 1  @Scheduled(cron = "0 0/15 7-12 * * ?")
 2      public void openStations() {
@@ -411,6 +420,8 @@ StationService.java:
 В.3 Аналітика дохідності станцій обслуговування
 
 StationService.java:
+
+GitHub репозиторій: https://github.com/NureShaparenkoArtem/apz-pzpi-22-8-shaparenko-artem/blob/main/Lab2/pzpi-22-8-shaparenko-artem-lab2/station/StationService.java
 
 1	public Float getStationEarningsForPeriod(Integer stationId, LocalDateTime from, 
 2	LocalDateTime to) {
