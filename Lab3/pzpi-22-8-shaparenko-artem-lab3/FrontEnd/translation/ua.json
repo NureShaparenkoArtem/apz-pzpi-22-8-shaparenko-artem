@@ -1,0 +1,60 @@
+{
+  "SaveButton": "Зберегти",
+  "DeleteButton": "Видалити",
+  "CancelButton": "Скасувати",
+  "Yes": "Так",
+  "No": "Ні",
+
+  "Sidebar": {
+    "Title": "Адмін панель",
+    "HomeButton": "Головна",
+    "UsersButton": "Користувачі",
+    "StationsButton": "Станції",
+    "ReservationsButton": "Бронювання",
+    "BackupButton": "Резервне копіювання"
+  },
+
+  "Dashboard": {
+    "Title": "Панель адміністратора",
+    "Hint": "Оберіть розділ у меню ліворуч."
+  },
+
+  "UsersPanel": {
+    "Title": "Користувачі",
+    "Table": {
+      "Fullname": "Імʼя",
+      "Email": "Електронна адреса",
+      "PhoneNumber": "Телефон"
+    },
+    "EditTitle": "Редагувати користувача"
+  },
+
+  "StationsPanel": {
+    "Title": "Станції обслуговування",
+    "Table": {
+      "Name": "Назва",
+      "Address": "Адреса",
+      "Price": "Ціна/год",
+      "Type": "Тип"
+    },
+    "EditTitle": "Редагувати станцію"
+  },
+
+  "ReservationsPanel": {
+    "Title": "Бронювання",
+    "Table": {
+      "StartTime": "Початок",
+      "EndTime": "Кінець",
+      "Status": "Статус",
+      "MechanicNeed": "Потрібен механік",
+      "Station": "Станція",
+      "Car": "Авто"
+    },
+    "EditTitle": "Обране бронювання"
+  },
+
+  "BackupPanel": {
+    "Title": "Резервне копіювання",
+    "BackupButton": "Створити резервну копію"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "SaveButton": "Save",
+  "DeleteButton": "Delete",
+  "CancelButton": "Cancel",
+  "Yes": "Yes",
+  "No": "No",
+
+  "Sidebar": {
+    "Title": "Admin Panel",
+    "HomeButton": "Home",
+    "UsersButton": "Users",
+    "StationsButton": "Stations",
+    "ReservationsButton": "Reservations",
+    "BackupButton": "Backup"
+  },
+
+  "Dashboard": {
+    "Title": "Administrator panel",
+    "Hint": "Select a section from the menu on the left."
+  },
+
+  "UsersPanel": {
+    "Title": "Users",
+    "Table": {
+      "Fullname": "Full name",
+      "Email": "Email",
+      "PhoneNumber": "Phone"
+    },
+    "EditTitle": "Edit user"
+  },
+
+  "StationsPanel": {
+    "Title": "Service Stations",
+    "Table": {
+      "Name": "Name",
+      "Address": "Address",
+      "Price": "Price/hour",
+      "Type": "Type"
+    },
+    "EditTitle": "Edit station"
+  },
+
+  "ReservationsPanel": {
+    "Title": "Reservations",
+    "Table": {
+      "StartTime": "Started",
+      "EndTime": "Ended",
+      "Status": "Status",
+      "MechanicNeed": "Mechanic needed",
+      "Station": "Station",
+      "Car": "Car"
+    },
+    "EditTitle": "Selected reservation"
+  },
+
+  "BackupPanel": {
+    "Title": "Backup",
+    "BackupButton": "Create backup"
+  }
+}
